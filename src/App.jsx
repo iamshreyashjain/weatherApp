@@ -2,6 +2,7 @@ import { getDatabase, ref, push, set } from "firebase/database";
 import { app } from "./context/firebase";
 import { IoLogoFirebase } from "react-icons/io5";
 import { useState } from "react";
+import Appon from "./AppOn";
 
 const db = getDatabase(app);
 
@@ -70,6 +71,7 @@ export default function App() {
           </button>
         </form>
       </div>
+      <Appon/>
     </>
   );
 }
