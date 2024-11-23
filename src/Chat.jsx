@@ -1,22 +1,26 @@
 import { useEffect, useState } from "react";
-import { addDoc, collection, onSnapshot, query, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, onSnapshot, query, where,serverTimestamp } from "firebase/firestore";
 import { auth, db } from "./context/firebase";
 
-export default function Chat() {
+export default function Chat(props) {
+
+    const {room} = props
+
     const [newMessage, setNewMessage] = useState("");
-    const [messages, setMessages] = useState([]);
-    const [loading, setLoading] = useState(false); // Loading state
     const messageRef = collection(db, "messages");
 
+    const [messages, setMessages] = useState([]);
+    const [loading, setLoading] = useState(false); // Loading state
+
     useEffect(() => {
-        // Set up Firestore listener
-        const queryMessages = query(messageRef);
+
+        const queryMessages = query(messageRef, where("room", "==", room));
         const unsubscribe = onSnapshot(queryMessages, (snapshot) => {
-            let messageList = [];
+            let messages = [];
             snapshot.forEach((doc) => {
-                messageList.push({ ...doc.data(), id: doc.id });
+                messages.push({ ...doc.data(), id: doc.id });
             });
-            setMessages(messageList); // Update messages state
+            setMessages(messages); // Update messages state
         });
 
         // Clean up listener on unmount
@@ -35,7 +39,8 @@ export default function Chat() {
             await addDoc(messageRef, {
                 text: newMessage,
                 createdAt: serverTimestamp(),
-                user: auth.currentUser.displayName || "Anonymous",
+                user: auth.currentUser.displayName,
+                room: room
             });
             setNewMessage(""); // Clear the input field after submission
         } catch (error) {

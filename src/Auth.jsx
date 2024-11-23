@@ -17,14 +17,16 @@ export default function Auth(props){
         setisAuth(true)
         }
         catch(error){
+            console.log(error)
     }
-        console.log(error)
     }
     
     return(
         <>
         <center><h1>Hello, Sign in With Google to Continue</h1></center>
-        <button className='bg-gray-100 border-2 border-gray-800 py-1 px-3 rounded-md hover:bg-gray-200' onClick = {signInWithGoogle}>Sign In With Google</button>
+        <button 
+            className='bg-gray-100 border-2 border-gray-800 py-1 px-3 rounded-md hover:bg-gray-200' 
+            onClick = {signInWithGoogle}>Sign In With Google</button>
         </>
     )
 }
