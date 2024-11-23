@@ -48,7 +48,8 @@ export default function Chat(props) {
     };
 
     return (
-        <div className="m-4 border-2 border-gray-900 rounded-md w-3/12">
+        <div className="border-2 border-gray-900 rounded-md lg:w-3/12 w-screen">
+        <div className="text-center bg-blue-600 text-white text-b py-2">Chat</div>
             <div className="h-64 overflow-scroll bg-white p-2">
                 {messages.map((message) => {
                     const isSender = message.user === auth.currentUser.displayName;
@@ -81,16 +82,16 @@ export default function Chat(props) {
                     );
                 })}
             </div>
-            <form onSubmit={handleSubmit} className="flex justify-between">
+            <form onSubmit={handleSubmit} className="flex">
                 <input
-                    className="border-2 border-gray-400 rounded-md px-2 py-1 flex-grow"
-                    placeholder="Type your message here..."
+                    className="border-2 border-gray-400 rounded-md px-2 py-1 w-[75%]"
+                    placeholder=""
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                 />
                 <button
                     type="submit"
-                    className="bg-blue-600 px-3 py-1 rounded-md text-white"
+                    className="bg-blue-600 px-3 py-1 rounded-md text-white w-[25%]"
                     disabled={loading}
                 >
                     {loading ? (
