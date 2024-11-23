@@ -1,76 +1,104 @@
 import { useEffect, useState } from "react";
-import { addDoc, collection, onSnapshot, query, where,serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, onSnapshot, query, where, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "./context/firebase";
+import { BiSolidSend } from "react-icons/bi";
+import { MdAccessTime } from "react-icons/md";
 
 export default function Chat(props) {
-
-    const {room} = props
-
+    const { room } = props;
     const [newMessage, setNewMessage] = useState("");
+    const [messages, setMessages] = useState([]);
+    const [loading, setLoading] = useState(false);
     const messageRef = collection(db, "messages");
 
-    const [messages, setMessages] = useState([]);
-    const [loading, setLoading] = useState(false); // Loading state
-
     useEffect(() => {
-
         const queryMessages = query(messageRef, where("room", "==", room));
         const unsubscribe = onSnapshot(queryMessages, (snapshot) => {
             let messages = [];
             snapshot.forEach((doc) => {
                 messages.push({ ...doc.data(), id: doc.id });
             });
-            setMessages(messages); // Update messages state
+            // Sort messages by timestamp
+            messages.sort((a, b) => a.createdAt?.seconds - b.createdAt?.seconds);
+            setMessages(messages);
         });
 
-        // Clean up listener on unmount
         return () => unsubscribe();
-    }, []); // Empty dependency array ensures this runs once on mount
+    }, [room]); // Re-run if room changes
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (newMessage === "") {
-            return;
-        }
+        if (newMessage === "") return;
 
-        setLoading(true); // Show loading while sending the message
+        setLoading(true);
 
         try {
             await addDoc(messageRef, {
                 text: newMessage,
                 createdAt: serverTimestamp(),
                 user: auth.currentUser.displayName,
-                room: room
+                room: room,
             });
-            setNewMessage(""); // Clear the input field after submission
+            setNewMessage("");
         } catch (error) {
             console.error("Error adding message: ", error);
         } finally {
-            setLoading(false); // Stop loading after the request
+            setLoading(false);
         }
     };
 
     return (
-        <div>
-            <div className="messages">
-                {messages.map((message) => (
-                    <h1 key={message.id}>{message.text}</h1> // Use unique key for each item
-                ))}
+        <div className="m-4 border-2 border-gray-900 rounded-md w-3/12">
+            <div className="h-32 overflow-scroll bg-white p-2">
+                {messages.map((message) => {
+                    const isSender = message.user === auth.currentUser.displayName;
+                    const formattedTime = message.createdAt
+                        ? new Intl.DateTimeFormat("en-US", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                          }).format(message.createdAt.toDate())
+                        : "Loading...";
+
+                    return (
+                        <div
+                            key={message.id}
+                            className={`flex items-start ${
+                                isSender ? "justify-end" : "justify-start"
+                            }`}
+                        >
+                            <div
+                                className={`max-w-xs p-2 rounded-lg m-1 ${
+                                    isSender
+                                        ? "bg-blue-200 text-right"
+                                        : "bg-gray-200 text-left"
+                                }`}
+                            >
+                                <p className="text-sm">{message.text}</p>
+                                <p className="text-xs text-gray-600">{formattedTime}</p>
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
-            <form onSubmit={handleSubmit} className="m-3">
+            <form onSubmit={handleSubmit} className="flex justify-between">
                 <input
-                    className="border-2 border-gray-400 rounded-md px-2 py-1"
+                    className="border-2 border-gray-400 rounded-md px-2 py-1 flex-grow"
                     placeholder="Type your message here..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                 />
-                <br />
                 <button
                     type="submit"
-                    className="bg-gray-100 border-gray-900 border-2 px-3 py-1 rounded-md my-3 text-blue-500"
-                    disabled={loading} // Disable button while loading
+                    className="bg-blue-600 px-3 py-1 rounded-md text-white"
+                    disabled={loading}
                 >
-                    {loading ? "Sending..." : "Enter Chat"} {/* Show loading text */}
+                    {loading ? (
+                        <MdAccessTime size={25} />
+                    ) : (
+                        <div className="flex justify-center items-center gap-2">
+                            <BiSolidSend size={25} />
+                        </div>
+                    )}
                 </button>
             </form>
         </div>
