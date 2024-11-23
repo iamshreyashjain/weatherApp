@@ -49,7 +49,7 @@ export default function Chat(props) {
 
     return (
         <div className="m-4 border-2 border-gray-900 rounded-md w-3/12">
-            <div className="h-32 overflow-scroll bg-white p-2">
+            <div className="max-h-64 overflow-scroll bg-white p-2">
                 {messages.map((message) => {
                     const isSender = message.user === auth.currentUser.displayName;
                     const formattedTime = message.createdAt
@@ -73,6 +73,7 @@ export default function Chat(props) {
                                         : "bg-gray-200 text-left"
                                 }`}
                             >
+                                <p>{message.user}</p>
                                 <p className="text-sm">{message.text}</p>
                                 <p className="text-xs text-gray-600">{formattedTime}</p>
                             </div>
